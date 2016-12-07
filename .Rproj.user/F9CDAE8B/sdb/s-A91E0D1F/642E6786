@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "Package: iomlifetR\nType: Package\nTitle: What the Package Does (Title Case)\nVersion: 0.1.0\nAuthor: Who wrote it\nMaintainer: The package maintainer <yourself@somewhere.net>\nDescription: More about what it does (maybe more than one line)\n    Use four spaces when indenting paragraphs within the Description.\nLicense: What license is it under?\nEncoding: UTF-8\nLazyData: true",
+    "created" : 1480048341176.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "90854114",
+    "id" : "642E6786",
+    "lastKnownWriteTime" : 1478040372,
+    "last_content_update" : 1478040372,
+    "path" : "~/projects/iomlifetR/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "dcf"
+}

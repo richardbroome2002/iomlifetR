@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "iom_data <- read.csv(\"iom_data.csv\")\ndeaths <- iom_data$deaths\npopulation <- iom_data$population\nages <- 0:90\nRR <- 1.06\nunit <- 10\npm_concentration <- 1\nages_at_risk <- 30:90\n\n\nhazard <- deaths/population\nstart_age <- 0:90\n\nlife_table(start_age, hazard)\nons <- read.csv(\"ons_data.csv\")\n",
+    "created" : 1478076711935.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "1234808064",
+    "id" : "650BB65B",
+    "lastKnownWriteTime" : 7307218078148946007,
+    "last_content_update" : 1480454026888,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

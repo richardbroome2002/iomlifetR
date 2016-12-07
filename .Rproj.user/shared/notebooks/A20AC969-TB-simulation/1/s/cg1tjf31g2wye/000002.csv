@@ -1,0 +1,6 @@
+"0","```r
+x <- parallel::mclapply(lambdas, simulate_count, sim_number = 1000000, mc.cores = 3) 
+
+```"
+"1","all scheduled cores encountered errors in user code
+"

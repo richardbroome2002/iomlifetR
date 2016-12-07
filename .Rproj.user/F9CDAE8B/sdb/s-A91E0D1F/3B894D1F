@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#' Calculate the Impact Factor in future years\n#'\n#' @param pm_conc A numeric vector of PM2.5 concentrations in future years. The final value\n#' will be assumed to remain constant until the end of the 120 year  period.\n#' @param lag_structure A numeric vector specifying the structure of any cessation lag.\n#' @param RR A number. Specifies the relative risk from an epidemiologiccal study.\n#' @param unit A number. The unit change associated with the relative  risk\n#' @return A numeric vector of length 120 specifying the impact factor over the next 120 years\n#' @description produces a vector of the impact factor over 120 years.\n#' @examples\n#'\n#' # No cessation lag. PM concentration falls by 1 mcg/m3 after 1 year\n#' pm <- c(15, 14)\n#' impact_factor(pm)\n#'\n#' #US EPA cessation-lag structure\n#' us_epa_lag <- cumsum(c(0.3, rep(0.5, 4), rep(0.2/15, 15)))\n#' impact_factor(pm, us_epa_lag)\n#'\n#' # 5 year linear cessation-lag. PM concentration falls by 0.1mcg/m3 per year for 10 years.\n#' pm <- rev(seq(15, 14, 0.1))\n#' linear_lag <- seq(0.1, 1, 5)\n#' impact_factor(pm, linear_lag)\n\nimpact_factor <- function(pm_conc,\n                          lag_structure = 1,\n                          RR = 1.062, unit = 10){\n\n  # Create a variable that allows us to get all the variables the right length\n  duration <- 120\n  pm <- c(pm_conc, rep(pm_conc[length(pm_conc)], duration - length(pm_conc)))\n  # Calculate the year-to-year change in PM concentration.\n  change <- c(0, diff(pm))\n  # Which years have a change in PM concentration?\n  years <- which(change != 0)\n\n  # Make a matrix of the PM2.5 concentration adjusted for the lag effect\n  x <- matrix(0, duration, duration)\n  for(i in seq_len(duration)){\n    x[i, ] <- c(rep(0, i - 1),\n                head(lag_structure, duration - i), # If we're getting to the end of the row the lag has to be cut.\n                rep(1, length(pm) - i + 1 - length(head(lag_structure, duration - i)))\n    )\n  }\n\n  x <- x * -change  # lag x the change in concentration\n  x <- colSums(x)   # Total effect in each year\n\n  # Calculate the impact factor\n  IF <- 1 / RR^(x/unit)\n  IF\n}\n",
+    "created" : 1480048164231.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2026157984",
+    "id" : "3B894D1F",
+    "lastKnownWriteTime" : 1480367693,
+    "last_content_update" : 1480367693458,
+    "path" : "~/projects/iomlifetR/R/impact_factor.R",
+    "project_path" : "R/impact_factor.R",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
