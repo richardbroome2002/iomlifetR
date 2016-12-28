@@ -4,13 +4,12 @@
 \alias{impact}
 \title{An implementation of the IOMLIFET impact spreadsheets}
 \usage{
-impact(population, deaths, delta_pm = 1, lag_structure = 1, RR = 1.06,
-  unit = 10, max_age = 105, base_year = 2013)
+impact(demog_data, delta_pm = 1, lag_structure = 1, RR = 1.06,
+  unit = 10, max_age = 105, base_year = 2013, neonatal_deaths = TRUE)
 }
 \arguments{
-\item{population}{A vector of the population in single-year age groups}
-
-\item{deaths}{A vector of the total number of deaths in the population}
+\item{demog_data}{A data frame with three numeric columns headed "age" (the age at which each age group begins),
+"population" (the size of the population) and "deaths" (the number of deaths in the population).}
 
 \item{delta_pm}{The reduction in population-weighted PM2.5 concentration in
 each future year.}
@@ -25,6 +24,8 @@ This is taken from epidemiological studies}
 \item{max_age}{The maximum age to use for the assessment}
 
 \item{base_year}{The base year for the assessment}
+
+\item{neonatal_deaths}{Logical. Are neonatal deaths included?}
 }
 \value{
 A list of four matrices (with dimensions of age and calendar year)
@@ -46,12 +47,15 @@ Implements a life table method for estimating the mortality
 head(single_year_data)
 population <- subset(single_year_data,
                      time == 2011 & sex == "Persons" & measure == "Population")
-population <- population[, "value"]
+population <- population[, c("age", "value")]
+population$age <- as.numeric(gsub(" .+", "", population$age))
+colnames(population)[2] <- "population"
 deaths <- subset(single_year_data,
                  time == 2011 & sex == "Persons"& measure == "Deaths")
 deaths <- deaths[, "value"]
+demog_data <- data.frame(population, deaths = deaths)
 
-no_lag <- impact(population, deaths)
+no_lag <- impact(demog_data)
 
 # Plot the effect in the current cohort and the extended population
 par(mfrow = c(2, 1), cex = 0.5, cex.main = 1.9,

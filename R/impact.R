@@ -1,8 +1,7 @@
-
 # Impact Factor -----------------------------------------------------------
 
 #' Calculate the Impact Factor in future years
-#'
+#' @description produces a vector of the impact factor over 120 years.
 #' @param delta_pm A numeric vector. The annual reduction from baseline of
 #'   future PM2.5 concentrations. The final value will be assumed to remain
 #'   constant until the end of the 120 year  period.
@@ -13,9 +12,8 @@
 #' @param unit A number. The unit change associated with the relative  risk
 #' @return A numeric vector of length 120 specifying the impact factor over the
 #'   next 120 years
-#' @description produces a vector of the impact factor over 120 years.
+#' @export
 #' @examples
-#'
 #' # PM concentration reduced by 1 mcg/m3 in year 1, no cessation lag, RR = 1.06 per 10mcg/m3.
 #' impact_factor()
 #'
@@ -60,8 +58,8 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' An implementation of the IOMLIFET impact spreadsheets
 #' @description Implements a life table method for estimating the mortality
 #'   benefits of reduction in exposure to risk
-#' @param population A vector of the population in single-year age groups
-#' @param deaths A vector of the total number of deaths in the population
+#' @param demog_data A data frame with three numeric columns headed "age" (the age at which each age group begins),
+#'   "population" (the size of the population) and "deaths" (the number of deaths in the population).
 #' @param delta_pm The reduction in population-weighted PM2.5 concentration in
 #'   each future year.
 #' @param lag_structure The structure of any cessation lag
@@ -70,6 +68,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' @param unit The unit change in PM2.5 concentration for the RR
 #' @param max_age The maximum age to use for the assessment
 #' @param base_year The base year for the assessment
+#' @param neonatal_deaths Logical. Are neonatal deaths included?
 #'
 #' @return A list of four matrices (with dimensions of age and calendar year)
 #'   of:
@@ -87,12 +86,15 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' head(single_year_data)
 #' population <- subset(single_year_data,
 #'                      time == 2011 & sex == "Persons" & measure == "Population")
-#' population <- population[, "value"]
+#' population <- population[, c("age", "value")]
+#' population$age <- as.numeric(gsub(" .+", "", population$age))
+#' colnames(population)[2] <- "population"
 #' deaths <- subset(single_year_data,
 #'                  time == 2011 & sex == "Persons"& measure == "Deaths")
 #' deaths <- deaths[, "value"]
+#' demog_data <- data.frame(population, deaths = deaths)
 #'
-#' no_lag <- impact(population, deaths)
+#' no_lag <- impact(demog_data)
 #'
 #' # Plot the effect in the current cohort and the extended population
 #' par(mfrow = c(2, 1), cex = 0.5, cex.main = 1.9,
@@ -112,7 +114,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #'
 #' # US EPA lag
 #' lag <- cumsum(c(0.3, rep(0.5/4, 4), rep(0.2/15, 15)))
-#' epa_lag <- impact(population, deaths, lag_structure = lag)
+#' epa_lag <- impact(demog_data, lag_structure = lag)
 #'
 #' # Comparison of no lag and US EPA lag (Extended cohort)
 #' plot(no_lag$year, no_lag$deaths,
@@ -130,7 +132,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #'
 #' # Assuming PM takes 10 years to fall by 1mcg and US EPA cessation lag
 #' pm <- seq(0.1, 1, 0.1)
-#' slow_pm <- impact(population, deaths, delta_pm = pm, lag_structure = lag)
+#' slow_pm <- impact(demog_data, delta_pm = pm, lag_structure = lag)
 #'
 #' plot(no_lag$year, no_lag$deaths,
 #'      xlab = "Year", ylab = "Number",
@@ -146,27 +148,42 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' points(epa_lag$year, epa_lag$ly, col = "red", type = "b")
 #' points(slow_pm$year, slow_pm$ly, col = "blue", type = "b")
 #' #abline(h = 0)
-impact  <- function(population, deaths,
+impact  <- function(demog_data,
                     delta_pm = 1,
                     lag_structure = 1,
                     RR = 1.06, unit = 10,
-                    max_age = 105, base_year = 2013){
+                    max_age = 105, base_year = 2013,
+                    min_age_at_risk = 30,
+                    neonatal_deaths = TRUE){
 
   # First estimate the impact factor
   IF <- impact_factor(delta_pm = delta_pm, lag_structure = lag_structure,
                       RR = RR, unit = unit)
 
   # Functions -----------------------------------------
-  # Calculate the survival propbability from age 0 - 105.
+  # Calculate the survival propbability from age 0 - max_age.
   survival_probability <- function(IF) {
-    # Extend the hazard by repeating hazard in the final age group to length 106
-    qx <- c(qx, rep(qx[length(qx)], max_age + 1 - length(qx)))
-    # Mulitply ages 30+ by the impact factor
-    qx[31:length(qx)] <- qx[31:length(qx)] * IF
-    # Calculate the surival probability in the IOMLIFET way
-    sx <- (2 - qx) / (2 + qx)
-    sx[length(sx)] <- 0
+    # Extend the hazard and adjust it for the IF
+    Mx <- c(Mx, rep(Mx[length(Mx)], max_age + 1 - length(Mx)))
+    Mx[min_age_at_risk:max_age] <-  Mx[min_age_at_risk:max_age] * IF
+    n <- rep(1, length(Mx))
+
+    # ax: adjustment for timing of death within each age-group
+    if(neonatal_deaths){
+      ax <- c(0.1, rep(0.5, length(n) - 1))
+    } else {
+      ax <- rep(0.5, length(n))
+    }
+
+    qx <- n * Mx / (1 + n * (1 - ax) * Mx)
+    qx[length(qx)] <- 1
+    # Sx: survival probability
+    sx <- 1 - qx
     sx
+
+    # Extend the hazard by repeating hazard in the final age group to length 106
+    # Mulitply ages 30+ by the impact factor
+
   }
 
   # Make a Leslie matrix to transform the current population
@@ -187,8 +204,9 @@ impact  <- function(population, deaths,
     sx_diags <- lapply(IFs, survival_diag)
     # Empty matrix to which the transformed popualtion data will be added
     pop_mat <- matrix(0, ncol = length(sx_diags) + 1, nrow = nrow(sx_diags[[1]]))
-    # Baseline populaiton (0 in age-groups older than we have data for)
-    nx <- c(population, rep(0, nrow(sx_diags[[1]]) - length(population)))
+    # Baseline population (0 in age-groups older than we have data for)
+    nx <- c(demog_data$population,
+            rep(0, nrow(sx_diags[[1]]) - length(demog_data$population)))
     pop_mat[, 1] <- nx
     for(i in seq_along(sx_diags)){
       pop_mat[, i + 1] <- sx_diags[[i]] %*% pop_mat[, i]
@@ -203,7 +221,7 @@ impact  <- function(population, deaths,
 
   # Make matrices of the surival probability of the baseline and impacted
   # populations
-  qx <- deaths/population
+  Mx <- demog_data$deaths/demog_data$population
   sx_mat <- sapply(rep(1, length(IF)), FUN = survival_probability)
   sx_mat_i <- sapply(IF, FUN = survival_probability)
 

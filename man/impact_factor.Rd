@@ -27,7 +27,6 @@ A numeric vector of length 120 specifying the impact factor over the
 produces a vector of the impact factor over 120 years.
 }
 \examples{
-
 # PM concentration reduced by 1 mcg/m3 in year 1, no cessation lag, RR = 1.06 per 10mcg/m3.
 impact_factor()
 
