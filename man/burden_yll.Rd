@@ -18,19 +18,19 @@ A numeric vector of age_specific YLL
 Calculate the number of YLL
 }
 \examples{
-data(abridged_data)
-year <- 2011
-s <- "Persons"
 population <- subset(abridged_data,
-                     time == year & sex == s & measure == "Population",
+                     time == 2011 & sex == "Persons" & measure == "Population",
                      select = c(age, value))
+population <- population$value
 deaths <- subset(abridged_data,
-                 time == year & sex == s & measure == "Deaths",
+                 time == 2011 & sex == "Persons" & measure == "Deaths",
                  select = c(age, value))
 start_age <- as.numeric(gsub(" .+", "", deaths$age))
-le <- burden_le(population$value, deaths$value, start_age)
-impacted_le <- le[[3]][, "ex"]
-an <- burden_an(population$value, deaths$value, start_age)
+deaths <- deaths$value
+demog_data <- data.frame(age = start_age, population, deaths)
+le <- burden_le(demog_data)
+impacted_le <- le[["impacted"]][, "ex"]
+an <- burden_an(demog_data)
 yll <- burden_yll(an, impacted_le)
 sum(yll)
 }

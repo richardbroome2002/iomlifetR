@@ -4,21 +4,19 @@
 \alias{burden_an}
 \title{The attributable number}
 \usage{
-burden_an(population, deaths, start_age, min_age_at_risk = 30,
-  pm_concentration = 1, RR = 1.06, unit = 10)
+burden_an(demog_data, min_age_at_risk = 30, pm_concentration = 1,
+  RR = 1.06, unit = 10)
 }
 \arguments{
-\item{population}{A numeric vector. The age-specific population size.}
-
-\item{deaths}{A numeric vector. The age-specific number of deaths.}
-
-\item{start_age}{A numeric vector. The starting age of each age group}
+\item{demog_data}{A data frame with columns of headed "age" (the age at which each age group begins), "population" (the size of the population) and "deaths" (the number of deaths in the population).}
 
 \item{pm_concentration}{A number. The population weighted-mean PM2.5 concentration of interest.}
 
 \item{RR}{A number. Specifies the relative risk from an epidemiologiccal study.}
 
 \item{unit}{A number. Speficies the unit change associated with the relative risk (RR).}
+
+\item{start_age}{A numeric vector. The starting age of each age group}
 
 \item{ages_at_risk}{A numeric vector. The age groups exposed to risk.}
 }
@@ -40,7 +38,8 @@ deaths <- subset(abridged_data,
                  time == year & sex == s & measure == "Deaths",
                  select = c(age, value))
 start_age <- as.numeric(gsub(" .+", "", deaths$age))
+demog_data <- data.frame(age = start_age, population, deaths)
 
-burden_an(population$value, deaths$value, start_age)
+burden_an(demog_data)
 }
 

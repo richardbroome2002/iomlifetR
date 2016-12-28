@@ -4,15 +4,11 @@
 \alias{burden_le}
 \title{An implementation of the IOM life expectancy spreadsheets}
 \usage{
-burden_le(population, deaths, start_age = 0:90, min_age_at_risk = 30,
-  pm_concentration = 1, RR = 1.06, unit = 10, neonatal_deaths = TRUE)
+burden_le(demog_data, min_age_at_risk = 30, pm_concentration = 1,
+  RR = 1.06, unit = 10, neonatal_deaths = TRUE)
 }
 \arguments{
-\item{population}{A numeric vector. The age-specific population size.}
-
-\item{deaths}{A numeric vector. The age-specific number of deaths.}
-
-\item{start_age}{A numeric vector. The starting age of each age group}
+\item{demog_data}{A data frame with columns of headed "age" (the age at which each age group begins), "population" (the size of the population) and "deaths" (the number of deaths in the population).}
 
 \item{min_age_at_risk}{Numeric vector. The lowest age susceptible to air pollution.}
 
@@ -23,6 +19,8 @@ burden_le(population, deaths, start_age = 0:90, min_age_at_risk = 30,
 \item{unit}{A number. Speficies the unit change associated with the relative risk (RR).}
 
 \item{neonatal_deaths}{Logical. Are neonatal deaths included?}
+
+\item{start_age}{A numeric vector. The starting age of each age group}
 }
 \value{
 A numeric vector of length 120 specifying the impact factor over the next 120 years.
@@ -54,7 +52,8 @@ deaths <- subset(abridged_data,
                  select = c(age, value))
 start_age <- as.numeric(gsub(" .+", "", deaths$age))
 deaths <- deaths$value
-x <- burden_le(population, deaths, start_age)
+demog_data <- data.frame(age = start_age, population, deaths)
+x <- burden_le(demog_data)
 x[[1]][1, 2] # Change in LE at birth (days)
 }
 

@@ -4,7 +4,7 @@
 \alias{life_table}
 \title{Calculate life expectancy}
 \usage{
-life_table(hazard, start_age = 0:90, neonatal_deaths = TRUE)
+life_table(hazard, start_age, neonatal_deaths = TRUE)
 }
 \arguments{
 \item{hazard}{A numeric vector. The age specific hazard.}
