@@ -92,6 +92,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' deaths <- subset(single_year_data,
 #'                  time == 2011 & sex == "Persons"& measure == "Deaths")
 #' deaths <- deaths[, "value"]
+#' colnames(deaths) <- "deaths"
 #' demog_data <- data.frame(population, deaths = deaths)
 #'
 #' no_lag <- impact(demog_data)
@@ -102,14 +103,14 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' plot(no_lag$year, no_lag$deaths_current,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Deaths avoided", type = "b")
-#' points(no_lag$year, no_lag$deaths, col = "red")
+#' points(no_lag$year, no_lag$deaths_ext, col = "red")
 #' abline(h = 0)
-#' legend(2100, 700, c("Current cohort", "Total"),
+#' legend(2100, 700, c("Current cohort", "Extended population"),
 #'        col=c("black", "red"), pch = 16, cex = 1.5, lty=2)
 #' plot(no_lag$year, no_lag$ly_current,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Life-years gained", , type = "b")
-#' points(no_lag$year, no_lag$ly, col = "red")
+#' points(no_lag$year, no_lag$ly_ext, col = "red")
 #' abline(h = 0)
 #'
 #' # US EPA lag
@@ -117,36 +118,36 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' epa_lag <- impact(demog_data, lag_structure = lag)
 #'
 #' # Comparison of no lag and US EPA lag (Extended cohort)
-#' plot(no_lag$year, no_lag$deaths,
+#' plot(no_lag$year, no_lag$deaths_ext,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Deaths avoided", type = "b")
-#' points(epa_lag$year, epa_lag$deaths, col = "red", type = "b")
+#' points(epa_lag$year, epa_lag$deaths_ext, col = "red", type = "b")
 #' abline(h = 0)
 #' legend(2100, 700, c("No lag", "US EPA lag"),
 #'        col=c("black", "red"), pch = 21, cex = 2, lty=2)
-#' plot(no_lag$year, no_lag$ly,
+#' plot(no_lag$year, no_lag$ly_ext,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Life-years gained", , type = "b")
-#' points(epa_lag$year, epa_lag$ly, col = "red", type = "b")
+#' points(epa_lag$year, epa_lag$ly_ext, col = "red", type = "b")
 #' abline(h = 0)
 #'
 #' # Assuming PM takes 10 years to fall by 1mcg and US EPA cessation lag
 #' pm <- seq(0.1, 1, 0.1)
 #' slow_pm <- impact(demog_data, delta_pm = pm, lag_structure = lag)
 #'
-#' plot(no_lag$year, no_lag$deaths,
+#' plot(no_lag$year, no_lag$deaths_ext,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Deaths avoided", type = "b")
-#' points(epa_lag$year, epa_lag$deaths, col = "red", type = "b")
-#' points(slow_pm$year, slow_pm$deaths, col = "blue", type = "b")
+#' points(epa_lag$year, epa_lag$deaths_ext, col = "red", type = "b")
+#' points(slow_pm$year, slow_pm$deaths_ext, col = "blue", type = "b")
 #' abline(h = 0)
 #' legend(2080, 700, c("No lag", "US EPA lag", "Lag and gradual fall in PM"),
 #'        col=c("black", "red", "blue"), pch = 21, cex = 2, lty=2)
-#' plot(no_lag$year, no_lag$ly,
+#' plot(no_lag$year, no_lag$ly_ext,
 #'      xlab = "Year", ylab = "Number",
 #'      main = "Life-years gained", type = "b")
-#' points(epa_lag$year, epa_lag$ly, col = "red", type = "b")
-#' points(slow_pm$year, slow_pm$ly, col = "blue", type = "b")
+#' points(epa_lag$year, epa_lag$ly_ext, col = "red", type = "b")
+#' points(slow_pm$year, slow_pm$ly_ext, col = "blue", type = "b")
 #' abline(h = 0)
 impact  <- function(demog_data,
                     delta_pm = 1,
@@ -164,8 +165,7 @@ impact  <- function(demog_data,
   # Calculate the survival propbability from age 0 - max_age.
   survival_probability <- function(IF) {
     # Extend the hazard and adjust it for the IF
-    Mx <- c(Mx, rep(Mx[length(Mx)], max_age + 1 - length(Mx)))
-    Mx[min_age_at_risk:max_age] <-  Mx[min_age_at_risk:max_age] * IF
+    Mx[min_age_at_risk:length(Mx)] <-  Mx[min_age_at_risk:length(Mx)] * IF
     n <- rep(1, length(Mx))
 
     # ax: adjustment for timing of death within each age-group
@@ -176,22 +176,25 @@ impact  <- function(demog_data,
     }
 
     qx <- n * Mx / (1 + n * (1 - ax) * Mx)
+
+    # Calculate qx at ages older than open ended age groups assuming a log-linear increase
+    mod_data <- data.frame(age = 50:(length(qx) - 2))
+    mod_data$lqx <- log(qx[50:(length(qx) - 2)])
+    mod <- lm(lqx ~ age, data = mod_data)
+    qx[length(qx):(max_age + 1)] <- exp(predict(mod, newdata = data.frame(age = length(qx):(max_age + 1))))
+
     qx[length(qx)] <- 1
     # Sx: survival probability
     sx <- 1 - qx
     sx
-
-    # Extend the hazard by repeating hazard in the final age group to length 106
-    # Mulitply ages 30+ by the impact factor
-
-  }
+    }
 
   # Make a Leslie matrix to transform the current population
   survival_diag <- function(IF){
     # Calculate the survival probability
     sx <- survival_probability(IF)
     # Make the diagonal
-    sx_diag <- diag(head(sx, - 1))
+    sx_diag <- diag(head(sx, -1))
     # Make a vector that goes 1, 0, 0 ... and make it the first row
     r1 <- rep(c(1,0), c(1, max_age - 1))
     sx_diag <- cbind(rbind(r1, sx_diag), rep(0, max_age + 1))
