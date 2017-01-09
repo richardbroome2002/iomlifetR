@@ -7,7 +7,7 @@ The key function is `impact()` which provides estimates of life-years gained in 
 
 ## Additional things to consider
 
-- Life table and impact function to include an exponential decline in risk. At the moment, the function doesn't cope particularly well with Australian data with an 85+ open ended age group. The mortality rate in this group is so low that you end up with a large (and unrealistic) number of people still alive at age 105.
+- Life table and impact function to include an exponential increase in risk. At the moment, the function doesn't cope particularly well with Australian data with an 85+ open ended age group. The mortality rate in this group is so low that you end up with a large (and unrealistic) number of people still alive at age 105. **-- DONE 9/1/17**
 
 - Add a facility to alter birth rates
 
