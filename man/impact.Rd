@@ -5,7 +5,8 @@
 \title{An implementation of the IOMLIFET impact spreadsheets}
 \usage{
 impact(demog_data, delta_pm = 1, lag_structure = 1, RR = 1.06,
-  unit = 10, max_age = 105, base_year = 2013, neonatal_deaths = TRUE)
+  unit = 10, max_age = 105, base_year = 2013, min_age_at_risk = 30,
+  neonatal_deaths = TRUE)
 }
 \arguments{
 \item{demog_data}{A data frame with three numeric columns headed "age" (the age at which each age group begins),
@@ -14,12 +15,12 @@ impact(demog_data, delta_pm = 1, lag_structure = 1, RR = 1.06,
 \item{delta_pm}{The reduction in population-weighted PM2.5 concentration in
 each future year.}
 
-\item{lag_structure}{The structure of any cessation lag}
+\item{lag_structure}{A numeric vector with values between 0 and 1 that defines the structure of any cessation lag.}
 
 \item{RR}{The relative risk (or hazard ratio) to use from the assessment.
 This is taken from epidemiological studies}
 
-\item{unit}{The unit change in PM2.5 concentration for the RR}
+\item{unit}{The unit change in PM2.5 concentration for the RR from an epidemiological study}
 
 \item{max_age}{The maximum age to use for the assessment}
 
@@ -28,13 +29,13 @@ This is taken from epidemiological studies}
 \item{neonatal_deaths}{Logical. Are neonatal deaths included?}
 }
 \value{
-A list of four matrices (with dimensions of age and calendar year)
-  of:
+A dataframe of five columns of:
     \itemize{
+      \item{The year}
       \item{The difference in number of deaths over 120 years (extended population)}
       \item{The difference in number of deaths over 120 years (current cohort)}
       \item{The difference in number of Life-years over 120 years (extended population)}
-      \item{The difference in number of Life-years over 120 years (current cohort)}
+      \item{The difference in number of Life-years over 120 years (current cohort).}
       }
 }
 \description{
@@ -75,7 +76,7 @@ abline(h = 0)
 
 # US EPA lag
 lag <- cumsum(c(0.3, rep(0.5/4, 4), rep(0.2/15, 15)))
-epa_lag <- impact(population, deaths, lag_structure = lag)
+epa_lag <- impact(demog_data, lag_structure = lag)
 
 # Comparison of no lag and US EPA lag (Extended cohort)
 plot(no_lag$year, no_lag$deaths,
@@ -93,7 +94,7 @@ abline(h = 0)
 
 # Assuming PM takes 10 years to fall by 1mcg and US EPA cessation lag
 pm <- seq(0.1, 1, 0.1)
-slow_pm <- impact(population, deaths, delta_pm = pm, lag_structure = lag)
+slow_pm <- impact(demog_data, delta_pm = pm, lag_structure = lag)
 
 plot(no_lag$year, no_lag$deaths,
      xlab = "Year", ylab = "Number",
@@ -108,6 +109,6 @@ plot(no_lag$year, no_lag$ly,
      main = "Life-years gained", type = "b")
 points(epa_lag$year, epa_lag$ly, col = "red", type = "b")
 points(slow_pm$year, slow_pm$ly, col = "blue", type = "b")
-#abline(h = 0)
+abline(h = 0)
 }
 

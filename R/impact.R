@@ -62,21 +62,21 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #'   "population" (the size of the population) and "deaths" (the number of deaths in the population).
 #' @param delta_pm The reduction in population-weighted PM2.5 concentration in
 #'   each future year.
-#' @param lag_structure The structure of any cessation lag
+#' @param lag_structure A numeric vector with values between 0 and 1 that defines the structure of any cessation lag.
 #' @param RR The relative risk (or hazard ratio) to use from the assessment.
 #'   This is taken from epidemiological studies
-#' @param unit The unit change in PM2.5 concentration for the RR
+#' @param unit The unit change in PM2.5 concentration for the RR from an epidemiological study
 #' @param max_age The maximum age to use for the assessment
 #' @param base_year The base year for the assessment
 #' @param neonatal_deaths Logical. Are neonatal deaths included?
 #'
-#' @return A list of four matrices (with dimensions of age and calendar year)
-#'   of:
+#' @return A dataframe of five columns of:
 #'     \itemize{
+#'       \item{The year}
 #'       \item{The difference in number of deaths over 120 years (extended population)}
 #'       \item{The difference in number of deaths over 120 years (current cohort)}
 #'       \item{The difference in number of Life-years over 120 years (extended population)}
-#'       \item{The difference in number of Life-years over 120 years (current cohort)}
+#'       \item{The difference in number of Life-years over 120 years (current cohort).}
 #'       }
 #' @export
 #'
@@ -147,7 +147,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #'      main = "Life-years gained", type = "b")
 #' points(epa_lag$year, epa_lag$ly, col = "red", type = "b")
 #' points(slow_pm$year, slow_pm$ly, col = "blue", type = "b")
-#' #abline(h = 0)
+#' abline(h = 0)
 impact  <- function(demog_data,
                     delta_pm = 1,
                     lag_structure = 1,
@@ -250,9 +250,9 @@ impact  <- function(demog_data,
 
   data.frame(
     year = base_year:(base_year + 119),
-    deaths = colSums(diff_deaths),
+    deaths_ext = colSums(diff_deaths),
     deaths_current = colSums(diff_deaths_current),
-    ly = colSums(diff_ly),
+    ly_ext = colSums(diff_ly),
     ly_current = colSums(diff_ly_current)
   )
 }
