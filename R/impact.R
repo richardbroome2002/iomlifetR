@@ -92,7 +92,6 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' deaths <- subset(single_year_data,
 #'                  time == 2011 & sex == "Persons"& measure == "Deaths")
 #' deaths <- deaths[, "value"]
-#' colnames(deaths) <- "deaths"
 #' demog_data <- data.frame(population, deaths = deaths)
 #'
 #' no_lag <- impact(demog_data)
@@ -189,18 +188,6 @@ impact  <- function(demog_data,
     sx
     }
 
-  # Make a Leslie matrix to transform the current population
-  # survival_diag <- function(IF){
-  #   # Calculate the survival probability
-  #   sx <- survival_probability(IF)
-  #   # Make the diagonal
-  #   sx_diag <- diag(head(sx, -1))
-  #   # Make a vector that goes 1, 0, 0 ... and make it the first row
-  #   r1 <- rep(c(1,0), c(1, max_age - 1))
-  #   sx_diag <- cbind(rbind(r1, sx_diag), rep(0, max_age + 1))
-  #   sx_diag
-  # }
-
   # Make a list of Leslie matricies (ie a matrix where the diagonal is a vector
   # of age-specific survival probabilities)
   make_leslie_matrices <- function(sx_matrix) {
@@ -225,9 +212,16 @@ impact  <- function(demog_data,
     pop_mat <- matrix(0,
                       ncol = length(leslie_matrix_list) + 1,
                       nrow = nrow(leslie_matrix_list[[1]]))
-    # Make a vector of population. Ages older than the last age-group in demog_data are completed with 0s.
-    nx <- c(demog_data$population,
-            rep(0, nrow(leslie_matrix_list[[1]]) - length(demog_data$population)))
+    # Make a vector of population. The open ended age group is distributed amont
+    # all ages up to max_age assuming the population delines linearly
+    nx <- c(demog_data$population)
+    open_pop <- nx[length(nx)]
+    years <- (max_age + 2) - (length(nx) - 1)
+    first_year = 2 * open_pop / years
+    pop <- first_year - (first_year/years) * 1:years - 1
+    # pop[length(pop)] <- 0
+    nx <- c(nx[-length(nx)], pop[-length(pop)])
+
     # This makes the first column of pop_mat.
     pop_mat[, 1] <- nx
     # We then iterate along, multiplying each column of population by the appropriate Leslie matrix
@@ -241,25 +235,6 @@ impact  <- function(demog_data,
     pop_mat
   }
 
-  # population_matrix <- function(IFs) {
-  #   # Make a list of Leslie matrices
-  #   sx_diags <- lapply(IFs, survival_diag)
-  #   # Empty matrix to which the transformed popualtion data will be added
-  #   pop_mat <- matrix(0, ncol = length(sx_diags) + 1, nrow = nrow(sx_diags[[1]]))
-  #   # Baseline population (0 in age-groups older than we have data for)
-  #   nx <- c(demog_data$population,
-  #           rep(0, nrow(sx_diags[[1]]) - length(demog_data$population)))
-  #   pop_mat[, 1] <- nx
-  #   for(i in seq_along(sx_diags)){
-  #     pop_mat[, i + 1] <- sx_diags[[i]] %*% pop_mat[, i]
-  #   }
-  #   pop_mat <- pop_mat[, -ncol(pop_mat)]
-  #   colnames(pop_mat) <- base_year:(base_year + 119)
-  #   rownames(pop_mat) <- 0:max_age
-  #   pop_mat
-  # }
-
-
   # Calculate results --------------------------------------------------
 
   # Make matrices of the surival probability of the baseline and impacted
@@ -268,20 +243,13 @@ impact  <- function(demog_data,
   sx_mat <- sapply(rep(1, length(IF)), FUN = survival_probability)
   sx_mat_i <- sapply(IF, FUN = survival_probability)
 
-
+  # Make the leslie matricies to form the future population under the two scenarios
   baseline_leslie_matrices <- make_leslie_matrices(sx_mat)
   impacted_leslie_matricies <- make_leslie_matrices(sx_mat_i)
-
-  sx_diag_i <- lapply(data.frame(sx_mat_i[-nrow(sx_mat_i),1:ncol(sx_mat_i)]), diag)
-  sx_diag_i <- lapply(sx_diag_i, function(x, y){ rbind(y, x) }, y = r1)
-  sx_diag_i <- lapply(sx_diag_i, cbind, c1)
-
 
   # Make matricies of the baseline and impacted populations
   baseline_pop <- population_matrix(baseline_leslie_matrices)
   impacted_pop <- population_matrix(impacted_leslie_matricies)
-  # baseline_pop <- population_matrix(rep(1, length(IF)))
-  # impacted_pop <- population_matrix(IF)
 
   # Calculate number of deaths
   baseline_deaths <- baseline_pop * (1 - sx_mat)
