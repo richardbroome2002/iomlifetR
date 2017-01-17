@@ -285,17 +285,11 @@ impact <- function(demog_data,
 
 #' Present value of life years gained in the future
 #'
-#' @param impact_obj A dataframe - the output of the `impact()` function
+#' @param life_years A numeric vector of life years gained by year
 #' @param vly The value of a statistical life year
 #' @param discount_rate The discount rate to be applied
-#' @param time_horizon The number of future years to be included
 #'
-#' @return A list with:
-#' \itemize{
-#'       \item{The present value of future life years gained in the cohort alive in the first year of assessment}
-#'       \item{The present value of future life years gained in a population refreshed by new births}
-#'       \item{A data frame showing the present value of life yearas }
-#'       }
+#' @return A numeric vector of the present value of life years gained in future years.
 #'
 #' @export
 #'
@@ -312,36 +306,15 @@ impact <- function(demog_data,
 #' demog_data <- data.frame(population, deaths = deaths)
 #'
 #' no_lag <- impact(demog_data)
+#' ly_extended <- colSums(no_lag$ly_extended)
 #'
-#' val_3 <-  present_value(no_lag, 250000)
-#' val_1 <-  present_value(no_lag, 250000, discount_rate = 0.01)
-#' val_7 <-  present_value(no_lag, 250000, discount_rate = 0.07)
+#' sum(present_value(ly_extended, 250000))
 #'
-#' plot(val_1[[3]]$year, val_1[[3]]$pv_ext,
-#'      xlab = "Year", ylab = "Present value ($)",
-#'      main = "Present value of life years gained")
-#' points(val_3[[3]]$year, val_3[[3]]$pv_ext, col="red")
-#' points(val_7[[3]]$year, val_7[[3]]$pv_ext, col="blue")
-#' legend(2090, 2.7e9, c("1% discount", "3% discount", "7% discount"),
-#'        col=c("black", "red", "blue"), pch = 1, cex = 1)
-
-present_value <- function(impact_obj, vly, discount_rate = 0.03, time_horizon = 106) {
+present_value <- function(life_years, vly, discount_rate = 0.03) {
 
   # Add a vector of time in years to the impact data frame
-  impact_obj$t <- 1:nrow(impact_obj)
+  t <- 1:length(life_years)
   # Calculate the present value of life years saved in the current cohort
-  impact_obj$pv_current <- (impact_obj$ly_current * vly) / (1 + discount_rate)^impact_obj$t
-  # Calculate the present value of life years saved in the extended cohort
-  impact_obj$pv_ext <- (impact_obj$ly_ext * vly) / (1 + discount_rate)^impact_obj$t
-
-  # Prepare results
-  results <- list(pv_current <- sum(impact_obj$pv_current[1:time_horizon]),
-                  pv_ext <- sum(impact_obj$pv_ext[1:time_horizon]),
-                  annual_results <- data.frame(year = impact_obj$year[1:time_horizon],
-                                               ly_current = impact_obj$ly_current[1:time_horizon],
-                                               pv_current = impact_obj$pv_current[1:time_horizon],
-                                               ly_ext = impact_obj$ly_current[1:time_horizon],
-                                               pv_ext = impact_obj$pv_ext[1:time_horizon]
-                                               ))
-  return(results)
+  pv <- (life_years * vly) / (1 + discount_rate)^t
+  return(pv)
 }
