@@ -54,62 +54,64 @@ colnames(population)[2] <- "population"
 deaths <- subset(single_year_data,
                  time == 2011 & sex == "Persons"& measure == "Deaths")
 deaths <- deaths[, "value"]
-colnames(deaths) <- "deaths"
 demog_data <- data.frame(population, deaths = deaths)
 
 no_lag <- impact(demog_data)
+no_lag <- data.frame(lapply(no_lag, colSums))
 
 # Plot the effect in the current cohort and the extended population
 par(mfrow = c(2, 1), cex = 0.5, cex.main = 1.9,
     cex.lab = 1.5, cex.axis = 1.4)
-plot(no_lag$year, no_lag$deaths_current,
+plot(rownames(no_lag), no_lag$deaths_current,
      xlab = "Year", ylab = "Number",
      main = "Deaths avoided", type = "b")
-points(no_lag$year, no_lag$deaths_ext, col = "red")
+points(rownames(no_lag), no_lag$deaths_ext, col = "red")
 abline(h = 0)
 legend(2100, 700, c("Current cohort", "Extended population"),
        col=c("black", "red"), pch = 16, cex = 1.5, lty=2)
-plot(no_lag$year, no_lag$ly_current,
+plot(rownames(no_lag), no_lag$ly_current,
      xlab = "Year", ylab = "Number",
      main = "Life-years gained", , type = "b")
-points(no_lag$year, no_lag$ly_ext, col = "red")
+points(rownames(no_lag), no_lag$ly_ext, col = "red")
 abline(h = 0)
 
 # US EPA lag
 lag <- cumsum(c(0.3, rep(0.5/4, 4), rep(0.2/15, 15)))
 epa_lag <- impact(demog_data, lag_structure = lag)
+epa_lag <- data.frame(lapply(epa_lag, colSums))
 
 # Comparison of no lag and US EPA lag (Extended cohort)
-plot(no_lag$year, no_lag$deaths_ext,
+plot(rownames(no_lag), no_lag$deaths_ext,
      xlab = "Year", ylab = "Number",
      main = "Deaths avoided", type = "b")
-points(epa_lag$year, epa_lag$deaths_ext, col = "red", type = "b")
+points(rownames(epa_lag), epa_lag$deaths_ext, col = "red", type = "b")
 abline(h = 0)
 legend(2100, 700, c("No lag", "US EPA lag"),
        col=c("black", "red"), pch = 21, cex = 2, lty=2)
-plot(no_lag$year, no_lag$ly_ext,
+plot(rownames(no_lag), no_lag$ly_ext,
      xlab = "Year", ylab = "Number",
      main = "Life-years gained", , type = "b")
-points(epa_lag$year, epa_lag$ly_ext, col = "red", type = "b")
+points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
 abline(h = 0)
 
 # Assuming PM takes 10 years to fall by 1mcg and US EPA cessation lag
 pm <- seq(0.1, 1, 0.1)
 slow_pm <- impact(demog_data, delta_pm = pm, lag_structure = lag)
+slow_pm <- data.frame(lapply(slow_pm, colSums))
 
-plot(no_lag$year, no_lag$deaths_ext,
+plot(rownames(no_lag), no_lag$deaths_ext,
      xlab = "Year", ylab = "Number",
      main = "Deaths avoided", type = "b")
-points(epa_lag$year, epa_lag$deaths_ext, col = "red", type = "b")
-points(slow_pm$year, slow_pm$deaths_ext, col = "blue", type = "b")
+points(rownames(epa_lag), epa_lag$deaths_ext, col = "red", type = "b")
+points(rownames(slow_pm), slow_pm$deaths_ext, col = "blue", type = "b")
 abline(h = 0)
 legend(2080, 700, c("No lag", "US EPA lag", "Lag and gradual fall in PM"),
        col=c("black", "red", "blue"), pch = 21, cex = 2, lty=2)
-plot(no_lag$year, no_lag$ly_ext,
+plot(rownames(no_lag), no_lag$ly_ext,
      xlab = "Year", ylab = "Number",
      main = "Life-years gained", type = "b")
-points(epa_lag$year, epa_lag$ly_ext, col = "red", type = "b")
-points(slow_pm$year, slow_pm$ly_ext, col = "blue", type = "b")
+points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
+points(rownames(slow_pm), slow_pm$ly_ext, col = "blue", type = "b")
 abline(h = 0)
 }
 

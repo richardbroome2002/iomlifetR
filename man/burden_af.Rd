@@ -2,7 +2,7 @@
 % Please edit documentation in R/burden.R
 \name{burden_af}
 \alias{burden_af}
-\title{Attributbale fractionA number. The population weighted-mean PM2.5 concentration of interest.}
+\title{Attributbale fraction}
 \usage{
 burden_af(RR = 1.062, unit = 10, pm_concentration = 1)
 }
