@@ -23,8 +23,6 @@ burden_le(demog_data, min_age_at_risk = 30, pm_concentration = 1,
 \item{start_age}{A numeric vector. The starting age of each age group}
 }
 \value{
-A numeric vector of length 120 specifying the impact factor over the next 120 years.
-
 A list of 3 elements:
 \itemize{
   \item{The difference (between the baseline and impacted population) in:}

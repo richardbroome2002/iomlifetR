@@ -98,7 +98,6 @@ life_table <- function(hazard, start_age, neonatal_deaths = TRUE){
 #' @param RR A number. Specifies the relative risk from an epidemiologiccal study.
 #' @param neonatal_deaths Logical. Are neonatal deaths included?
 #' @param unit A number. Speficies the unit change associated with the relative risk (RR).
-#' @return A numeric vector of length 120 specifying the impact factor over the next 120 years.
 #'
 #' @return A list of 3 elements:
 #' \itemize{
@@ -210,7 +209,6 @@ burden_an <- function(demog_data, min_age_at_risk = 30,
 #'
 #' @param attributable_number A numeric vector of age-specific attributable numbers
 #' @param life_expectancy A numeriv vector of age-specific life expectancies
-#'
 #' @return A numeric vector of age_specific YLL
 #' @export
 #'
@@ -237,10 +235,9 @@ burden_yll <- function(attributable_number, life_expectancy){
 
 # Attributable Fraction ---------------------------------------------------
 
-#' Attributbale fractionA number. The population weighted-mean PM2.5 concentration of interest.
+#' Attributbale fraction
 #'
-#' Calculate the attributable fraction related to a PM$_{2.5}$ concentration
-#'
+#' @description Calculate the attributable fraction related to a PM$_{2.5}$ concentration
 #' @param RR A number. Specifies the relative risk from an epidemiologiccal study.
 #' @param unit A number. Speficies the unit change associated with the relative risk (RR).
 #' @param pm_concentration A number. The population weighted-mean PM2.5 concentration of interest.
