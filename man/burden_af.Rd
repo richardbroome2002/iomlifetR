@@ -2,25 +2,24 @@
 % Please edit documentation in R/burden.R
 \name{burden_af}
 \alias{burden_af}
-\title{Attributbale fraction}
+\title{Attributable fraction}
 \usage{
 burden_af(RR = 1.062, unit = 10, pm_concentration = 1)
 }
 \arguments{
-\item{RR}{A number. Specifies the relative risk from an epidemiologiccal study.}
+\item{RR}{A number. The relative risk from an epidemiological study}
 
-\item{unit}{A number. Speficies the unit change associated with the relative risk (RR).}
+\item{unit}{A number. The unit change in PM2.5 concentration related to RR}
 
-\item{pm_concentration}{A number. The population weighted-mean PM2.5 concentration of interest.}
+\item{pm_concentration}{A number. The change in PM2.5 of interest.}
 }
 \value{
 A number. The fraction of total mortality attributable to the risk factor
 }
 \description{
-Calculate the attributable fraction related to a PM$_{2.5}$ concentration
+Attributable fraction
 }
 \examples{
-
 burden_af(RR = 1.14, pm_concentration = 0.5)
 }
 
