@@ -235,21 +235,19 @@ burden_yll <- function(attributable_number, life_expectancy){
 
 # Attributable Fraction ---------------------------------------------------
 
-#' Attributbale fraction
+#' Attributable fraction
 #'
-#' @description Calculate the attributable fraction related to a PM$_{2.5}$ concentration
-#' @param RR A number. Specifies the relative risk from an epidemiologiccal study.
-#' @param unit A number. Speficies the unit change associated with the relative risk (RR).
-#' @param pm_concentration A number. The population weighted-mean PM2.5 concentration of interest.
+#' @param RR A number. The relative risk from an epidemiological study
+#' @param unit A number. The unit change in PM2.5 concentration related to RR
+#' @param pm_concentration A number. The change in PM2.5 of interest.
 #'
-#' @return A number. The percent of mortality attributable to the risk factor
+#' @return A number. The fraction of total mortality attributable to the risk factor
 #' @export
 #'
 #' @examples
-#'
-#' burden_af(RR = 1.14, pm_concentration = 0.5)
-burden_af <- function(RR = 1.062, unit = 10, pm_concentration = 1) {
-  rr <- RR^(pm_concentration / unit)
-  af <- 100*(rr-1)/rr
+#' burden_af(1.14, pm_concentration = 0.5)
+burden_af <- function(RR, unit, pm_concentration) {
+  rr = RR^(pm_concentration/unit)
+  af = (rr-1)/rr
   af
 }
