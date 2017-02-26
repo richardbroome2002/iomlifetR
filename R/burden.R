@@ -245,9 +245,17 @@ burden_yll <- function(attributable_number, life_expectancy){
 #' @export
 #'
 #' @examples
+<<<<<<< HEAD
 #' burden_af(1.14, pm_concentration = 0.5)
 burden_af <- function(RR, unit, pm_concentration) {
   rr = RR^(pm_concentration/unit)
   af = (rr-1)/rr
+=======
+#'
+#' burden_af(RR = 1.14, pm_concentration = 0.5)
+burden_af <- function(RR = 1.062, unit = 10, pm_concentration = 1) {
+  rr <- RR^(pm_concentration / unit)
+  af <- (rr-1)/rr
+>>>>>>> 0028521dffb5dfac3c206f16083276f528e8cb2c
   af
 }
