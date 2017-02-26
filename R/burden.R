@@ -242,7 +242,7 @@ burden_yll <- function(attributable_number, life_expectancy){
 #' @param unit A number. Speficies the unit change associated with the relative risk (RR).
 #' @param pm_concentration A number. The population weighted-mean PM2.5 concentration of interest.
 #'
-#' @return A number. The percent of mortality attributable to the risk factor
+#' @return A number. The fraction of total mortality attributable to the risk factor
 #' @export
 #'
 #' @examples
@@ -250,6 +250,6 @@ burden_yll <- function(attributable_number, life_expectancy){
 #' burden_af(RR = 1.14, pm_concentration = 0.5)
 burden_af <- function(RR = 1.062, unit = 10, pm_concentration = 1) {
   rr <- RR^(pm_concentration / unit)
-  af <- 100*(rr-1)/rr
+  af <- (rr-1)/rr
   af
 }

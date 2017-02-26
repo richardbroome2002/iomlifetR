@@ -14,7 +14,7 @@ burden_af(RR = 1.062, unit = 10, pm_concentration = 1)
 \item{pm_concentration}{A number. The population weighted-mean PM2.5 concentration of interest.}
 }
 \value{
-A number. The percent of mortality attributable to the risk factor
+A number. The fraction of total mortality attributable to the risk factor
 }
 \description{
 Calculate the attributable fraction related to a PM$_{2.5}$ concentration
