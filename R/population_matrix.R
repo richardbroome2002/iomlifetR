@@ -1,4 +1,3 @@
-
 # Make a matrix of future population by age and calendar year
 population_matrix <- function(leslie_matrix_list) {
   # Create an empty matrix with rows representing age (0 - max age) and

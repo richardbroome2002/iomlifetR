@@ -1,4 +1,3 @@
-
 # Make a list of Leslie matricies (ie a matrix where the diagonal is a vector
 # of age-specific survival probabilities)
 make_leslie_matrices <- function(sx_matrix) {

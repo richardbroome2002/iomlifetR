@@ -1,4 +1,3 @@
-
 #' The attributable number
 #'
 #' @param demog_data A data frame with columns of headed "age" (the age at which each age group begins), "population" (the size of the population) and "deaths" (the number of deaths in the population).

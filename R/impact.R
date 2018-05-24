@@ -1,4 +1,3 @@
-
 # Calculate Impact --------------------------------------------------------
 
 #' An implementation of the IOMLIFET impact spreadsheets

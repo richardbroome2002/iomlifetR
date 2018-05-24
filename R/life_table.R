@@ -1,4 +1,3 @@
-
 #' Calculate life expectancy
 #'
 #' @description Calculate life expectancy using the Chiang method

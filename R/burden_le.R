@@ -1,4 +1,3 @@
-
 # Difference in life expectancy ---------------------------------------------
 
 #' An implementation of the IOM life expectancy spreadsheets

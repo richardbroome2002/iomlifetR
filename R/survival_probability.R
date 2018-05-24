@@ -1,4 +1,3 @@
-
 # Calculate the survival propbability from age 0 - max_age.
 survival_probability <- function(IF) {
   # Extend the hazard and adjust it for the IF

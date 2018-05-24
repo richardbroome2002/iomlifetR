@@ -1,4 +1,3 @@
-
 #' Calculate the Impact Factor in future years
 #' @description produces a vector of the impact factor over 120 years.
 #' @param delta_pm A numeric vector. The annual reduction from baseline of

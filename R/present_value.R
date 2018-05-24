@@ -1,4 +1,3 @@
-
 # Present value -----------------------------------------------------------
 
 #' Present value of life years gained in the future
