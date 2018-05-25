@@ -1,7 +1,7 @@
 Package: iomlifetR
 Type: Package
 Title: An implementation of the IOMLIFET spreadsheets
-Version: 0.1.0
+Version: 0.1.1
 Author: Richard Broome
 Maintainer: Richard Broome <baz@cantab.net>
 Description: The IOMLIFET spreadsheets facilitate the use of life-tables for assessment of public health risks.

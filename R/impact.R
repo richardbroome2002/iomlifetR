@@ -1,58 +1,3 @@
-# Impact Factor -----------------------------------------------------------
-
-#' Calculate the Impact Factor in future years
-#' @description produces a vector of the impact factor over 120 years.
-#' @param delta_pm A numeric vector. The annual reduction from baseline of
-#'   future PM2.5 concentrations. The final value will be assumed to remain
-#'   constant until the end of the 120 year  period.
-#' @param lag_structure A numeric vector specifying the structure of any
-#'   cessation lag.
-#' @param RR A number. Specifies the relative risk from an epidemiologiccal
-#'   study.
-#' @param unit A number. The unit change associated with the relative  risk
-#' @return A numeric vector of length 120 specifying the impact factor over the
-#'   next 120 years
-#' @export
-#' @examples
-#' # PM concentration reduced by 1 mcg/m3 in year 1, no cessation lag, RR = 1.06 per 10mcg/m3.
-#' impact_factor()
-#'
-#' #US EPA cessation-lag structure
-#' epa_lag <- cumsum(c(0.3, rep(0.5, 4), rep(0.2/15, 15)))
-#' impact_factor(lag_structure = epa_lag)
-#'
-#' # 5 year linear cessation-lag. PM concentration falls by 0.1mcg/m3 per year for 10 years.
-#' pm <- seq(0.1, 1, 0.1)
-#' linear_lag <- seq(0.1, 1, 5)
-#' impact_factor(pm, linear_lag)
-
-impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10){
-
-  # Create a variable that allows us to get all the variables the right length
-  duration <- 120
-  pm <- c(0, delta_pm, rep(delta_pm[length(delta_pm)], duration - length(delta_pm)))
-  # Calculate the year-to-year change in PM concentration.
-  change <- diff(pm)
-  # Which years have a change in PM concentration?
-  # years <- which(change != 0)
-
-  # Make a matrix of the PM2.5 concentration adjusted for the lag effect
-  x <- matrix(0, duration, duration)
-  for(i in seq_len(duration)){
-    x[i, ] <- c(rep(0, i - 1),
-                head(lag_structure, duration - i), # If we're getting to the end of the row the lag has to be cut.
-                rep(1, length(change) - i + 1 - length(head(lag_structure, duration - i)))
-    )
-  }
-  x <- x * change  # lag times the change in concentration
-  x <- colSums(x)   # Total effect in each year
-
-
-  # Calculate the impact factor
-  IF <- 1 / RR^(x/unit)
-  IF
-}
-
 # Calculate Impact --------------------------------------------------------
 
 #' An implementation of the IOMLIFET impact spreadsheets
@@ -151,6 +96,7 @@ impact_factor <- function(delta_pm = 1, lag_structure = 1, RR = 1.06, unit = 10)
 #' points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
 #' points(rownames(slow_pm), slow_pm$ly_ext, col = "blue", type = "b")
 #' abline(h = 0)
+
 impact <- function(demog_data,
                    delta_pm = 1,
                    lag_structure = 1,
@@ -162,81 +108,6 @@ impact <- function(demog_data,
   # First estimate the impact factor
   IF <- impact_factor(delta_pm = delta_pm, lag_structure = lag_structure,
                       RR = RR, unit = unit)
-
-  # Functions -----------------------------------------
-  # Calculate the survival propbability from age 0 - max_age.
-  survival_probability <- function(IF) {
-    # Extend the hazard and adjust it for the IF
-    Mx[min_age_at_risk:length(Mx)] <-  Mx[min_age_at_risk:length(Mx)] * IF
-    n <- rep(1, length(Mx))
-
-    # ax: adjustment for timing of death within each age-group
-    if(neonatal_deaths){
-      ax <- c(0.1, rep(0.5, length(n) - 1))
-    } else {
-      ax <- rep(0.5, length(n))
-    }
-
-    qx <- n * Mx / (1 + n * (1 - ax) * Mx)
-
-    # Calculate qx at ages older than open ended age groups assuming a log-linear increase
-    mod_data <- data.frame(age = 50:(length(qx) - 2))
-    mod_data$lqx <- log(qx[50:(length(qx) - 2)])
-    mod <- lm(lqx ~ age, data = mod_data)
-    qx[length(qx):(max_age + 1)] <- exp(predict(mod, newdata = data.frame(age = length(qx):(max_age + 1))))
-
-    qx[length(qx)] <- 1
-    # Sx: survival probability
-    sx <- 1 - qx
-    sx
-    }
-
-  # Make a list of Leslie matricies (ie a matrix where the diagonal is a vector
-  # of age-specific survival probabilities)
-  make_leslie_matrices <- function(sx_matrix) {
-    # Make extra values to buffer each matrix. The top left-hand corner of each
-    # matrix is 1, so that the number of births remains constant). Potentially,
-    # this could be changed so that the number of births each year could be
-    # varied.
-    r1 <- rep(c(1,0), c(1, max_age - 1))
-    c1 <- rep(0, max_age + 1)
-    # Make a diagnoal matrix from  each column of the matrix of survival probabilities (minus the last row)
-    sx_diag <- lapply(data.frame(sx_matrix[-nrow(sx_matrix),1:ncol(sx_matrix)]), diag)
-    # Bind the buffers to each matrix
-    sx_diag <- lapply(sx_diag, function(x, y){ rbind(y, x) }, y = r1)
-    sx_diag <- lapply(sx_diag, cbind, c1)
-    sx_diag
-  }
-
-  # Make a matrix of future population by age and calendar year
-  population_matrix <- function(leslie_matrix_list) {
-    # Create an empty matrix with rows representing age (0 - max age) and
-    # columns representing years.
-    pop_mat <- matrix(0,
-                      ncol = length(leslie_matrix_list) + 1,
-                      nrow = nrow(leslie_matrix_list[[1]]))
-    # Make a vector of population. The open ended age group is distributed amont
-    # all ages up to max_age assuming the population delines linearly
-    nx <- c(demog_data$population)
-    open_pop <- nx[length(nx)]
-    years <- (max_age + 2) - (length(nx) - 1)
-    first_year = 2 * open_pop / years
-    pop <- first_year - (first_year/years) * 1:years - 1
-    # pop[length(pop)] <- 0
-    nx <- c(nx[-length(nx)], pop[-length(pop)])
-
-    # This makes the first column of pop_mat.
-    pop_mat[, 1] <- nx
-    # We then iterate along, multiplying each column of population by the appropriate Leslie matrix
-    for(i in seq_along(leslie_matrix_list)){
-      pop_mat[, i + 1] <- leslie_matrix_list[[i]] %*% pop_mat[, i]
-    }
-    # Remove the last column and do some renaming.
-    pop_mat <- pop_mat[, -ncol(pop_mat)]
-    colnames(pop_mat) <- base_year:(base_year + 119)
-    rownames(pop_mat) <- 0:max_age
-    pop_mat
-  }
 
   # Calculate results --------------------------------------------------
 
@@ -278,43 +149,4 @@ impact <- function(demog_data,
     ly_current = diff_ly_current,
     deaths_current = diff_deaths_current
   )
-}
-
-
-# Present value -----------------------------------------------------------
-
-#' Present value of life years gained in the future
-#'
-#' @param life_years A numeric vector of life years gained by year
-#' @param vly The value of a statistical life year
-#' @param discount_rate The discount rate to be applied
-#'
-#' @return A numeric vector of the present value of life years gained in future years.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' population <- subset(single_year_data,
-#'                      time == 2011 & sex == "Persons" & measure == "Population")
-#' population <- population[, c("age", "value")]
-#' population$age <- as.numeric(gsub(" .+", "", population$age))
-#' colnames(population)[2] <- "population"
-#' deaths <- subset(single_year_data,
-#'                  time == 2011 & sex == "Persons"& measure == "Deaths")
-#' deaths <- deaths[, "value"]
-#' demog_data <- data.frame(population, deaths = deaths)
-#'
-#' no_lag <- impact(demog_data)
-#' ly_extended <- colSums(no_lag$ly_extended)
-#'
-#' sum(present_value(ly_extended, 250000))
-#'
-present_value <- function(life_years, vly, discount_rate = 0.03) {
-
-  # Add a vector of time in years to the impact data frame
-  t <- 1:length(life_years)
-  # Calculate the present value of life years saved in the current cohort
-  pv <- (life_years * vly) / (1 + discount_rate)^t
-  return(pv)
 }
