@@ -6,6 +6,7 @@ Author: Richard Broome
 Maintainer: Richard Broome <baz@cantab.net>
 Description: The IOMLIFET spreadsheets facilitate the use of life-tables for assessment of public health risks.
 License: GPL-3
+Depends: R (>= 2.10)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.0

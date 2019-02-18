@@ -114,16 +114,18 @@ impact <- function(demog_data,
   # Make matrices of the surival probability of the baseline and impacted
   # populations
   Mx <- demog_data$deaths/demog_data$population
-  sx_mat <- sapply(rep(1, length(IF)), FUN = survival_probability)
-  sx_mat_i <- sapply(IF, FUN = survival_probability)
+  sx_mat <- sapply(rep(1, length(IF)), FUN = survival_probability, Mx,
+                   min_age_at_risk, max_age, neonatal_deaths)
+  sx_mat_i <- sapply(IF, FUN = survival_probability, Mx,
+                     min_age_at_risk, max_age, neonatal_deaths)
 
   # Make the leslie matricies to form the future population under the two scenarios
-  baseline_leslie_matrices <- make_leslie_matrices(sx_mat)
-  impacted_leslie_matricies <- make_leslie_matrices(sx_mat_i)
+  baseline_leslie_matrices <- make_leslie_matrices(sx_mat, max_age)
+  impacted_leslie_matricies <- make_leslie_matrices(sx_mat_i, max_age)
 
   # Make matricies of the baseline and impacted populations
-  baseline_pop <- population_matrix(baseline_leslie_matrices)
-  impacted_pop <- population_matrix(impacted_leslie_matricies)
+  baseline_pop <- population_matrix(baseline_leslie_matrices, demog_data, max_age, base_year)
+  impacted_pop <- population_matrix(impacted_leslie_matricies, demog_data, max_age, base_year)
 
   # Calculate number of deaths
   baseline_deaths <- baseline_pop * (1 - sx_mat)

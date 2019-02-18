@@ -1,5 +1,7 @@
 # Calculate the survival propbability from age 0 - max_age.
-survival_probability <- function(IF) {
+survival_probability <- function(IF,Mx,
+                                 min_age_at_risk,max_age,
+                                 neonatal_deaths) {
   # Extend the hazard and adjust it for the IF
   Mx[min_age_at_risk:length(Mx)] <-  Mx[min_age_at_risk:length(Mx)] * IF
   n <- rep(1, length(Mx))

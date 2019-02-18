@@ -9,7 +9,7 @@
 abridged_data
 }
 \description{
-A dataset containing population and mortality data for age groups 0, 1 - 4, 5 - 9, 10 - 14, ... 100+.
+A dataset containing population and mortality data for (TODO which geographic unit?) age groups 0, 1 - 4, 5 - 9, 10 - 14, ... 100+.
 }
 \details{
 @format A dataframe with 19 rows and 3 variables
@@ -23,4 +23,3 @@ A dataset containing population and mortality data for age groups 0, 1 - 4, 5 - 
  @source \url{http://stat.data.abs.gov.au}
 }
 \keyword{datasets}
-
