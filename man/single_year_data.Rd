@@ -23,4 +23,3 @@ A dataset containing population and mortality data in single year age groups 0 -
  @source \url{http://stat.data.abs.gov.au}
 }
 \keyword{datasets}
-

@@ -12,3 +12,7 @@ The IOMLIFET spreadsheets facilitate the use of life-tables for
 assessment of public health risks.
 License: GPL-3
 ```
+
+## Josh's Fork
+
+- Vignettes are being added. These are not built by devtools by default, need to use `devtools::install(build_vignettes = TRUE)` (or similar) to create.

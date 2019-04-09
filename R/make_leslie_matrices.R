@@ -1,6 +1,6 @@
 # Make a list of Leslie matricies (ie a matrix where the diagonal is a vector
 # of age-specific survival probabilities)
-make_leslie_matrices <- function(sx_matrix) {
+make_leslie_matrices <- function(sx_matrix, max_age) {
   # Make extra values to buffer each matrix. The top left-hand corner of each
   # matrix is 1, so that the number of births remains constant). Potentially,
   # this could be changed so that the number of births each year could be
