@@ -1,5 +1,5 @@
 # Make a matrix of future population by age and calendar year
-population_matrix <- function(leslie_matrix_list) {
+population_matrix <- function(leslie_matrix_list, demog_data, max_age, base_year) {
   # Create an empty matrix with rows representing age (0 - max age) and
   # columns representing years.
   pop_mat <- matrix(0,
