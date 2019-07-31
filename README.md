@@ -22,7 +22,7 @@ License: GPL-3
 
 - Vignettes are being added. These are not built by devtools by default, need to use 
 
-```{r}
+```r
 library(devtools)
 install_github("richardbroome2002/iomlifetR", build_vignettes = TRUE)
 ```
