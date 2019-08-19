@@ -114,4 +114,3 @@ points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
 points(rownames(slow_pm), slow_pm$ly_ext, col = "blue", type = "b")
 abline(h = 0)
 }
-

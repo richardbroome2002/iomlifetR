@@ -1,11 +1,16 @@
 Package: iomlifetR
 Type: Package
 Title: An implementation of the IOMLIFET spreadsheets
-Version: 0.1.1
-Author: Richard Broome
-Maintainer: Richard Broome <baz@cantab.net>
+Version: 0.2
+Author: Richard Broome, Joshua Horsley, Ivan Hanigan
+Maintainer: Ivan Hanigan <ivan.hanigan@gmail.com>
 Description: The IOMLIFET spreadsheets facilitate the use of life-tables for assessment of public health risks.
 License: GPL-3
+Depends: R (>= 2.10)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
