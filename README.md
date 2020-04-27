@@ -1,5 +1,5 @@
 # iomlifetR
-# add documentation here
+
 An implementation of the IOMLIFET excel spreadsheets in R. The IOMLIFET spreadsheets facilitate the use of life-tables for
 assessment of public health risks.
 
@@ -26,3 +26,7 @@ License: GPL-3
 library(devtools)
 install_github("richardbroome2002/iomlifetR", build_vignettes = TRUE)
 ```
+
+# Acknowledgments
+
+Margaret Rolfe and Timothy Chaston
