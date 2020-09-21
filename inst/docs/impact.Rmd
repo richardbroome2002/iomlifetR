@@ -1,0 +1,138 @@
+---
+title: "Impact"
+author: "Josh Horsley and Richard Broome"
+date: "`r Sys.Date()`"
+output: rmarkdown::pdf_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+
+library(iomlifetR)
+```
+
+This vignette demonstrates impact assessment with various lag choices
+
+# Reduce PM~2.5~ by 1 $\mu g/m^3$
+
+For this example we will use the HRAPIE mean relative risk estiamte RR = 1.06 per 10 $\mu g/m^3$ of PM~2.5~.
+
+## No cessation lag
+
+Functions in this package use demographic data in a standardised format stored in `demog_data`. For this example we will use the included `single_year_data` to create `demog_data`.
+```{r}
+head(single_year_data)
+population <- subset(single_year_data,
+                     time == 2011 & sex == "Persons" & measure == "Population")
+population <- population[, c("age", "value")]
+population$age <- as.numeric(gsub(" .+", "", population$age))
+colnames(population)[2] <- "population"
+deaths <- subset(single_year_data,
+                 time == 2011 & sex == "Persons"& measure == "Deaths")
+deaths <- deaths[, "value"]
+demog_data <- data.frame(population, deaths = deaths)
+```
+
+## Calculate the impact assuming there is no lag between exposure reduction and health outcomes
+```{r}
+no_lag <- impact(demog_data)
+no_lag <- data.frame(lapply(no_lag, colSums))
+```
+
+Compare deaths avoided
+```{r}
+plot(rownames(no_lag), no_lag$deaths_current,
+     xlab = "Year", ylab = "Number",
+     main = "Deaths avoided", type = "b")
+points(rownames(no_lag), no_lag$deaths_ext, col = "red")
+abline(h = 0)
+legend("topright", c("Current cohort", "Extended population"),
+       col=c("black", "red"), pch = 21, lty=2)
+```
+
+Comapre life-years gained
+```{r}
+plot(rownames(no_lag), no_lag$ly_current,
+     xlab = "Year", ylab = "Number",
+     main = "Life-years gained", type = "b")
+points(rownames(no_lag), no_lag$ly_ext, col = "red")
+abline(h = 0)
+legend("bottom", c("Current cohort", "Extended population"),
+       col=c("black", "red"), pch = 21, lty=2)
+```
+
+
+
+## Calculate the impact assuming the US EPA lag between exposure reduction and health outcomes
+
+```{r}
+lag <- cumsum(c(0.3, rep(0.5/4, 4), rep(0.2/15, 15)))
+epa_lag <- impact(demog_data, lag_structure = lag)
+epa_lag <- data.frame(lapply(epa_lag, colSums))
+```
+
+Plot a comparison of no lag and US EPA lag (Extended cohort)
+```{r}
+plot(rownames(no_lag), no_lag$deaths_ext,
+     xlab = "Year", ylab = "Number",
+     main = "Deaths avoided", type = "b")
+points(rownames(epa_lag), epa_lag$deaths_ext, col = "red", type = "b")
+abline(h = 0)
+legend("topright", c("No lag", "US EPA lag"),
+       col=c("black", "red"), pch = 21, lty=2)
+
+
+```
+
+Compare total life-years gained
+```{r}
+plot(rownames(no_lag), no_lag$ly_ext,
+     xlab = "Year", ylab = "Number",
+     main = "Life-years gained" , type = "b")
+points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
+abline(h = 0)
+legend("bottomright", c("No lag", "US EPA lag"),
+       col=c("black", "red"), pch = 21, lty=2)
+```
+
+
+## Assuming PM~2.5~ takes 10 years to fall by 1 $\mu g/m^3$ and US EPA cessation lag
+
+Calculate results
+```{r}
+pm <- seq(0.1, 1, 0.1)
+slow_pm <- impact(demog_data, delta_pm = pm, lag_structure = lag)
+slow_pm <- data.frame(lapply(slow_pm, colSums))
+
+```
+
+Compare deaths avoided
+```{r}
+plot(rownames(no_lag), no_lag$deaths_ext,
+     xlab = "Year", ylab = "Number",
+     main = "Deaths avoided", type = "b")
+points(rownames(epa_lag), epa_lag$deaths_ext, col = "red", type = "b")
+points(rownames(slow_pm), slow_pm$deaths_ext, col = "blue", type = "b")
+abline(h = 0)
+legend("topright", c("No lag", "US EPA lag", "Lag and gradual fall in PM"),
+       col=c("black", "red", "blue"), pch = 21, lty=2)
+
+```
+
+Compare life years gained
+```{r}
+plot(rownames(no_lag), no_lag$ly_ext,
+     xlab = "Year", ylab = "Number",
+     main = "Life-years gained", type = "b")
+points(rownames(epa_lag), epa_lag$ly_ext, col = "red", type = "b")
+points(rownames(slow_pm), slow_pm$ly_ext, col = "blue", type = "b")
+abline(h = 0)
+legend("bottomright", c("No lag", "US EPA lag", "Lag and gradual fall in PM"),
+       col=c("black", "red", "blue"), pch = 21, lty=2)
+```
+
