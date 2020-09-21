@@ -76,6 +76,19 @@ epa_lag <- impact(demog_data, lag_structure = lag)
 epa_lag <- data.frame(lapply(epa_lag, colSums))
 ```
 
+Plot a comparison of no lag and US EPA lag (Current cohort)
+```{r}
+plot(rownames(no_lag), no_lag$deaths_current,
+     xlab = "Year", ylab = "Number",
+     main = "Deaths avoided (current cohort)", type = "b")
+points(rownames(epa_lag), epa_lag$deaths_current, col = "red", type = "b")
+abline(h = 0)
+legend("topright", c("No lag", "US EPA lag"),
+       col=c("black", "red"), pch = 21, lty=2)
+
+
+```
+
 Plot a comparison of no lag and US EPA lag (Extended cohort)
 ```{r}
 plot(rownames(no_lag), no_lag$deaths_ext,
@@ -88,6 +101,7 @@ legend("topright", c("No lag", "US EPA lag"),
 
 
 ```
+
 
 Compare total life-years gained
 ```{r}
