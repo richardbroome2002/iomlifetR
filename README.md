@@ -26,3 +26,7 @@ License: GPL-3
 library(devtools)
 install_github("richardbroome2002/iomlifetR", build_vignettes = TRUE)
 ```
+
+# Acknowledgments
+
+Margaret Rolfe and Timothy Chaston

@@ -1,0 +1,140 @@
+---
+title: "Burden LE"
+author: "Ivan Hanigan, Richard Broome and Josh Horsley"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{burden_le}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(iomlifetR)
+```
+
+# The life tables 'Chiang method (II)' for subnational life expectancy at birth results
+
+This vignette demonstrates years/days of life gained for a reduction in PM2.5 with 95% confidence limits.
+
+It uses the 'Chiang method (II)' for Life Table calculations (ref Chiang CL. The Life Table and its Applications.Malabar (FL): Robert E Krieger Publ Co, 1984).
+ 
+Data source: Life Expectancy at Birth and at Age 65 by Local Areas in the United Kingdom: 2004?06 to 2008?10 Office for National Statistics (ONS)
+http://www.ons.gov.uk/ons/rel/subnational-health4/life-expec-at-birth-age-65/2004-06-to-2008-10/ref-life-table-template.xls.
+
+For this example we will use the HRAPIE mean relative risk estimate RR = 1.062 (1.040-1.083) per 10 ?g/m3 of PM2.5. (Ref Health risks of air pollution in Europe ?HRAPIE project Recommendations for concentration?response functions for cost-benefit analysis of particulate matter, ozone and nitrogen dioxide World Health Organization 2013 http://www.euro.who.int/__data/assets/pdf_file/0006/238956/Health_risks_air_pollution_HRAPIE_project.pdf?Ua=1)
+
+```{r}
+## Scenario A: current exposure level of PM2.5
+## Scenario B: reduction of 3ug/m3 of PM2.5
+
+##*****************************************************
+
+##Install Libraries
+
+library(data.table)
+library(iomlifetR)
+
+
+## Using an abridged set of age, population and mortality data for 5 year age groups provided
+dat <- chiang_demo
+
+## This package uses demographic data in a standardised format of age, population, deaths stored in demog_data. 
+## Create demog data
+demog_data = data.frame(age = dat$start_age,
+                            population = dat$pop,
+                            deaths = dat$death)
+demog_data
+
+## Set up scenario:
+## use HRAPIE recommended concentration?responsefunctions (CRFs)given as relative risks (Table 1 Page 11)
+## for PM2.5  
+rr_use <- data.frame(est_type = c("RRper10", "RRper10_lci", "RRper10_uci"),
+                     est = c(1.062, 1.040, 1.083))
+rr_use
+
+## estimate for change in exposure of PM2.5, set to 3ug/m3
+
+deltaX = 3
+#deltaX = 5
+
+## Calculate for RR and 95CIs (using loop)
+
+
+for(est_type in rr_use$est_type){
+    ##
+    rr <- rr_use[rr_use$est_type == est_type, "est"]
+    print(est_type)
+    
+## Calculate life table for baseline (Scenario A)and reduced exposure (Scenario B)scenarions
+##
+le = burden_le(demog_data,
+               pm_concentration = deltaX,
+               RR = rr)
+ le
+
+## Calculate years of life lost yll from lifetable
+
+impacted_le <- le[["impacted"]][, "ex"]
+ impacted_le
+
+an <- burden_an(demog_data,
+                pm_concentration = deltaX,
+                RR = rr)
+yll <- burden_yll(an, impacted_le)
+yll
+## results in a data frame 'burden' 
+burden <- data.frame(x_attrib = an, population = demog_data$population, le, an, yll)
+    ##
+burden$est_type <- est_type
+
+if(est_type == "RRper10"){
+    burden_out <- burden
+} else {
+    burden_out <- rbind(burden_out, burden)
+}
+}
+## end of loop
+
+
+##burden_out
+setDT(burden_out)    
+burden_out[,sum(yll), by = est_type]
+
+## Prints years of life lost (V1) with 95% confidence limits for scenario A (current PM2.5 level)
+## compared to a 3ug/m3 reduction (Scenario B) 
+"
+      est_type       V1
+1:     RRper10 566.8479
+2: RRper10_lci 369.4309
+3: RRper10_uci 751.6683
+"
+##burden_out[1,]
+ledif <- data.frame(
+    impacted_le = burden_out[baseline.age == 0, impacted.ex],
+    baseline_le = burden_out[baseline.age == 0, baseline.ex]
+    )
+(ledif[,1] - ledif[,2]) * 365
+## Prints days of life gained by birth cohort in scenario B (reduction in 3ug/m3)
+"
+71.12587
+lower 46.33968
+upper 94.34513
+"
+## NOTE: For a reduction of 5ug/m3
+## the years of life lost is 
+"      est_type        V1
+1:     RRper10  945.5301
+2: RRper10_lci  616.0461
+3: RRper10_uci 1254.1772
+
+and days of life gained by the birth cohort
+ 118.71546 (7.30533-157.54756)
+"
+```
